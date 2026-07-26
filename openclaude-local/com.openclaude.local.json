@@ -1,0 +1,9 @@
+{
+  "name": "com.openclaude.local",
+  "description": "OpenClaude Local companion host — starts localhost:8787 config/API proxy",
+  "path": "HOST_PATH_PLACEHOLDER",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/"
+  ]
+}

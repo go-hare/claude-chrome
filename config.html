@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claude 本地配置</title>
+    <link rel="icon" type="image/png" href="/icon-128.png" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0c0a09;
+        --card: #1c1917;
+        --border: #292524;
+        --text: #fafaf9;
+        --muted: #a8a29e;
+        --accent: #d97706;
+        --accent-hover: #f59e0b;
+        --ok: #86efac;
+        --bad: #fca5a5;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 820px; margin: 36px auto; padding: 0 20px 60px; }
+      h1 { font-size: 1.35rem; margin: 0 0 8px; }
+      h2 { font-size: 1rem; margin: 0 0 10px; color: #e7e5e4; }
+      p { color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 16px;
+      }
+      label { display: block; font-size: 0.85rem; color: #d6d3d1; margin: 12px 0 6px; }
+      input, select, textarea {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #44403c;
+        background: #0c0a09;
+        color: var(--text);
+        padding: 11px 12px;
+        font-size: 0.92rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      textarea { min-height: 110px; resize: vertical; line-height: 1.4; }
+      .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+      button {
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #111;
+        font-weight: 600;
+        padding: 11px 14px;
+        cursor: pointer;
+      }
+      button:hover { background: var(--accent-hover); }
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid #44403c;
+      }
+      .muted { color: var(--muted); font-size: 0.85rem; }
+      .ok { color: var(--ok); }
+      .bad { color: var(--bad); }
+      code { background: #292524; padding: 2px 6px; border-radius: 6px; font-size: 0.85em; }
+      .checks { display: flex; flex-wrap: wrap; gap: 14px 18px; margin-top: 10px; }
+      .checks label { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.9rem; }
+      .checks input { width: auto; }
+      .hint { margin-top: 8px; }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #44403c;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>本地配置 <span class="badge">仅本机 storage · 无远程控制站</span></h1>
+      <p>
+        配置保存在扩展
+        <code>chrome.storage.local.localCfcOptions</code>。
+        启动默认从 <code>assets/local-defaults.js</code> 灌入；对话走你填写的 API Base + Key。
+      </p>
+
+      <div class="card">
+        <h2>1. 免登录凭证</h2>
+        <label for="anthropicBaseUrl">API Base URL（anthropicBaseUrl）</label>
+        <input id="anthropicBaseUrl" placeholder="https://api.anthropic.com 或你的中转" />
+
+        <label for="apiKey">API Key</label>
+        <input id="apiKey" type="password" placeholder="sk-... / 上游 Key" autocomplete="off" />
+
+        <div class="grid2">
+          <div>
+            <label for="mode">mode</label>
+            <select id="mode">
+              <option value="api_key">api_key（免登录，推荐）</option>
+              <option value="claude">claude</option>
+            </select>
+          </div>
+          <div>
+            <label for="proxyMode">proxyMode（proxyIncludes 命中后）</label>
+            <select id="proxyMode">
+              <option value="discard">discard（本地丢弃，推荐）</option>
+              <option value="rewrite">rewrite（拼到 proxyBase 反代）</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="proxyBase">proxyBase（仅 proxyMode=rewrite 时需要，可空）</label>
+        <input id="proxyBase" placeholder="可空。例如 https://your-proxy.example/" />
+
+        <div class="checks">
+          <label><input id="noLogin" type="checkbox" checked /> noLogin 有 Key 直进侧栏</label>
+          <label><input id="blockOAuth" type="checkbox" checked /> blockOAuth 拦截官网登录</label>
+          <label><input id="blockRemoteOpenclaude" type="checkbox" checked /> 拦截远程控制站请求</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. 请求规则列表</h2>
+        <p class="muted">每行一条。支持前缀 URL、域名、路径、以及 <code>*keyword</code> 通配。</p>
+
+        <label for="apiBaseIncludes">apiBaseIncludes（改写到 anthropicBaseUrl）</label>
+        <textarea id="apiBaseIncludes" spellcheck="false"></textarea>
+
+        <label for="proxyIncludes">proxyIncludes（按 proxyMode 丢弃或反代）</label>
+        <textarea id="proxyIncludes" spellcheck="false"></textarea>
+
+        <label for="discardIncludes">discardIncludes（直接 204）</label>
+        <textarea id="discardIncludes" spellcheck="false"></textarea>
+
+        <label for="modelAlias">modelAlias（每行：原模型 => 别名）</label>
+        <textarea id="modelAlias" placeholder="claude-sonnet-4-20250514 => my-sonnet" spellcheck="false"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="row" style="margin-top:0">
+          <button id="save" type="button">保存全部</button>
+          <button id="resetDefaults" class="secondary" type="button">恢复默认规则</button>
+          <button id="openSidepanel" class="secondary" type="button">打开侧栏</button>
+          <span id="msg" class="muted"></span>
+        </div>
+        <p class="hint muted">
+          存储键：<code>localCfcOptions</code> + <code>anthropicApiKey</code> + 兼容字段
+          <code>customApiBaseUrl</code>。全部仅写本机，不请求任何远程 options 接口。
+        </p>
+      </div>
+    </div>
+    <script type="module" src="/assets/config-page.js"></script>
+  </body>
+</html>
